@@ -1,11 +1,10 @@
 package cat.pratfp.gamevault;
-
 import cat.pratfp.gamevault.fs.Magatzem;
 import cat.pratfp.gamevault.io.CauCataleg;
 import cat.pratfp.gamevault.io.CsvJocDao;
 import cat.pratfp.gamevault.io.IndexHores;
 import cat.pratfp.gamevault.io.JsonJocDao;
-import cat.pratfp.gamevault.io.RegistreOperacions;
+import cat.pratfp.gamevault.fs.RegistreOperacions;
 import cat.pratfp.gamevault.model.Joc;
 import cat.pratfp.gamevault.model.ResultatCarrega;
 import cat.pratfp.gamevault.servei.CatalegException;

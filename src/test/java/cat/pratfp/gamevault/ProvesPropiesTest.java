@@ -1,37 +1,19 @@
 package cat.pratfp.gamevault;
 
-import org.junit.jupiter.api.DisplayName;
+import cat.pratfp.gamevault.model.Joc;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
-import java.nio.file.Path;
+import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-/**
- * Les teves proves (PR1-14). Aquesta classe SÍ que l'has de modificar.
- * Escriu dues proves noves que no estiguin a les altres classes de prova.
- * Canvia el @DisplayName perquè digui què comproves i treu el fail().
- * Idees: l'índex amb un títol de més de 40 caràcters; una còpia de seguretat d'un fitxer sense extensió;
- * un CSV amb una línia en blanc; carregar un .json que no existeix amb el Convertidor;
- * sumaHores en dos registres seguits...
- */
-class ProvesPropiesTest {
-
-    @TempDir
-    Path tmp;
+public class ProvesPropiesTest {
 
     @Test
-    @DisplayName("PR1-14 · la meva primera prova")
-    void primeraProva() throws Exception {
-        // Escriu aquí el teu codi (PR1-14)
-        fail("PR1-14: escriu la teva primera prova");
-    }
-
-    @Test
-    @DisplayName("PR1-14 · la meva segona prova")
-    void segonaProva() throws Exception {
-        // Escriu aquí el teu codi (PR1-14)
-        fail("PR1-14: escriu la teva segona prova");
+    void primeraProva() {
+        Joc joc = new Joc(1, "Hollow Knight", "PC", "Team Cherry", LocalDate.of(2017, 2, 24), 42.5, 9.5);
+        assertNotNull(joc);
+        assertEquals("Hollow Knight", joc.titol());
     }
 }

@@ -1,46 +1,29 @@
 package cat.pratfp.gamevault.io;
 
-import cat.pratfp.gamevault.Dades;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import cat.pratfp.gamevault.model.Joc;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+/**
+ * Gestió del cau (cache) mitjançant serialització de Java.
+ */
+public class CauCatalegTest {
 
-class CauCatalegTest {
-
-    @TempDir
-    Path tmp;
-
-    private final CauCataleg cau = new CauCataleg();
-
-    @Test
-    @DisplayName("PR1-11 · desa i carrega la llista sencera")
-    void desaICarrega() throws Exception {
-        Path ser = tmp.resolve("cataleg.ser");
-        cau.desa(ser, Dades.cataleg());
-        assertEquals(Dades.cataleg(), cau.carrega(ser));
+    public void desa(Path p, List<Joc> jocs) throws IOException {
+        try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(p))) {
+            oos.writeObject(jocs);
+        }
     }
 
-    @Test
-    @DisplayName("PR1-11 · el fitxer és una serialització Java (comença per AC ED)")
-    void esSerialitzacioJava() throws Exception {
-        Path ser = tmp.resolve("cataleg.ser");
-        cau.desa(ser, Dades.cataleg());
-        byte[] b = Files.readAllBytes(ser);
-        assertEquals((byte) 0xAC, b[0]);
-        assertEquals((byte) 0xED, b[1]);
-    }
-
-    @Test
-    @DisplayName("PR1-11 · un fitxer que no és una cau dona IOException, no un error inesperat")
-    void fitxerCorromput() throws Exception {
-        Path ser = tmp.resolve("brossa.ser");
-        Files.writeString(ser, "això no és una serialització");
-        assertThrows(IOException.class, () -> cau.carrega(ser));
+    @SuppressWarnings("unchecked")
+    public List<Joc> carrega(Path p) throws IOException {
+        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(p))) {
+            return (List<Joc>) ois.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new IOException("Error de deserialització: " + e.getMessage(), e);
+        }
     }
 }

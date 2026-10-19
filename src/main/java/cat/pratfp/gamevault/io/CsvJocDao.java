@@ -7,7 +7,6 @@ import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.CSVWriter;
-import com.opencsv.ICSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
 
 import java.io.IOException;
@@ -51,18 +50,28 @@ public class CsvJocDao {
             int linia = 1;                      // la línia 1 és la capçalera
             while ((c = csv.readNext()) != null) {
                 linia++;
-                /*
-                 * TODO PR1-06 · Convertir una línia en un Joc sense petar (CA 1.3 i 1.6)
-                 * c[] té els camps de la línia. Si la línia és bona, afegeix el Joc a jocs.
-                 * Si no ho és, afegeix a incidencies un text "línia N: motiu" i CONTINUA amb la següent:
-                 *   - menys de 7 camps                 -> "línia N: incompleta"
-                 *   - data que no es pot convertir     -> "línia N: data mal formada"
-                 *   - id, hores o nota no numèrics     -> "línia N: número invàlid"
-                 *   - el Joc rebutja les dades         -> "línia N: " + el missatge de l'excepció
-                 * Compte: NumberFormatException és filla d'IllegalArgumentException.
-                 * Pista: sessió 5, Ex3LlegeixCsvBrut.
-                 */
-                // Escriu aquí el teu codi (PR1-06)
+                try {
+                    if (c.length < 7) {
+                        incidencies.add("línia " + linia + ": incompleta");
+                        continue;
+                    }
+                    int id = Integer.parseInt(c[0]);
+                    String titol = c[1];
+                    String plataforma = c[2];
+                    String estudi = c[3];
+                    LocalDate dataSortida = LocalDate.parse(c[4]);
+                    double horesJugades = Double.parseDouble(c[5]);
+                    double nota = Double.parseDouble(c[6]);
+
+                    Joc joc = new Joc(id, titol, plataforma, estudi, dataSortida, horesJugades, nota);
+                    jocs.add(joc);
+                } catch (NumberFormatException e) {
+                    incidencies.add("línia " + linia + ": número invàlid");
+                } catch (DateTimeParseException e) {
+                    incidencies.add("línia " + linia + ": data mal formada");
+                } catch (IllegalArgumentException e) {
+                    incidencies.add("línia " + linia + ": " + e.getMessage());
+                }
             }
         } catch (CsvValidationException e) {
             throw new IOException("CSV mal format a " + p, e);
@@ -70,18 +79,17 @@ public class CsvJocDao {
         return new ResultatCarrega(jocs, incidencies);
     }
 
-    /*
-     * TODO PR1-07 · Escriure el catàleg en CSV (CA 1.4)
-     * Escriu el fitxer sencer (si ja existeix, se sobreescriu):
-     *   - primera fila: CAPCALERA
-     *   - una fila per joc: fes servir aCamps(j)
-     * - CSVWriter amb separador SEPARADOR, dins d'un try-with-resources, i Writer en UTF-8.
-     * - writeNext(fila, false): així només posa cometes quan cal (un títol amb ;).
-     * Pista: sessió 5, Ex4EscriuCsv.
+    /**
+     * Escriu el catàleg en CSV (CA 1.4).
      */
     public void escriu(Path p, List<Joc> jocs) throws IOException {
-        // Escriu aquí el teu codi (PR1-07)
-        throw new UnsupportedOperationException("PR1-07: encara no està fet");
+        try (Writer w = Files.newBufferedWriter(p, StandardCharsets.UTF_8);
+             CSVWriter writer = new CSVWriter(w, SEPARADOR, CSVWriter.DEFAULT_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END)) {
+            writer.writeNext(CAPCALERA, false);
+            for (Joc j : jocs) {
+                writer.writeNext(aCamps(j), false);
+            }
+        }
     }
 
     /**

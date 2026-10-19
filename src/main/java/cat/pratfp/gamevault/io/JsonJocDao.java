@@ -8,45 +8,57 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Lectura i escriptura del catàleg en JSON amb Jackson.
+ * Lectura i escriptura del catàleg en format JSON amb Jackson.
  */
 public class JsonJocDao {
 
-    private final ObjectMapper mapper = creaMapper();
+    private final ObjectMapper mapper;
 
-    /*
-     * TODO PR1-08 (1a part) · Configurar l'ObjectMapper (CA 1.5)
-     * Retorna un ObjectMapper que:
-     *   - entengui LocalDate (registra el JavaTimeModule),
-     *   - escrigui les dates com "2017-02-24" i no com [2017,2,24],
-     *   - no peti si el JSON porta camps que Joc no té.
-     * Pista: sessió 6, Ex4JsonAmbJackson.
-     */
-    private static ObjectMapper creaMapper() {
-        // Escriu aquí el teu codi (PR1-08)
-        return new ObjectMapper();
+    public JsonJocDao() {
+        mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    /*
-     * TODO PR1-08 (2a part) · Escriure la llista en JSON (CA 1.4)
-     * Escriu la llista sencera al fitxer, amb la sortida INDENTADA (una dada per línia).
-     */
-    public void escriu(Path p, List<Joc> jocs) throws IOException {
-        // Escriu aquí el teu codi (PR1-08)
-        throw new UnsupportedOperationException("PR1-08: encara no està fet");
-    }
-
-    /*
-     * TODO PR1-09 · Llegir la llista des de JSON (CA 1.3)
-     * Llegeix el fitxer i retorna una List<Joc>.
-     * Compte: amb List.class Jackson no sap que els elements són Joc. Què feia servir l'exemple?
+    /**
+     * Llegeix el catàleg des d'un fitxer JSON.
+     *
+     * @param p ruta del fitxer JSON
+     * @return Llista de jocs llegits
+     * @throws IOException si hi ha un error de lectura
      */
     public List<Joc> llegeix(Path p) throws IOException {
-        // Escriu aquí el teu codi (PR1-09)
-        throw new UnsupportedOperationException("PR1-09: encara no està fet");
+        if (!Files.exists(p)) {
+            return new ArrayList<>();
+        }
+
+        try (Reader reader = Files.newBufferedReader(p, StandardCharsets.UTF_8)) {
+            List<Joc> carregats = mapper.readValue(reader, new TypeReference<List<Joc>>() {});
+            return carregats != null ? carregats : new ArrayList<>();
+        }
+    }
+
+    /**
+     * Escriu el catàleg en un fitxer JSON.
+     *
+     * @param p ruta del fitxer JSON
+     * @param jocs llista de jocs a desar
+     * @throws IOException si hi ha un error d'escriptura
+     */
+    public void escriu(Path p, List<Joc> jocs) throws IOException {
+        try (Writer writer = Files.newBufferedWriter(p, StandardCharsets.UTF_8)) {
+            mapper.writeValue(writer, jocs);
+        }
     }
 }
